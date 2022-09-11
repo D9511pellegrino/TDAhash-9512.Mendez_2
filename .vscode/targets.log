@@ -2,6 +2,7 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 '\\wsl$\Ubuntu-20.04\home\duff\algoII_2\TDAhash-9512.Mendez_2'
 CMD.EXE se inici� con esta ruta como el directorio actual. No se permiten
 rutas UNC. Regresando de manera predeterminada al directorio Windows.
+
 "make.exe" no se reconoce como un comando interno o externo,
 programa o archivo por lotes ejecutable.
 

@@ -3,6 +3,7 @@
 
 #include "pa2m.h"
 #include "src/hash.h"
+#include "src/lista.h"
 
 typedef struct consola
 {
@@ -37,11 +38,11 @@ void puedoCrearUnHash()
 	hash_t* h = NULL;
 
 	pa2m_afirmar((h = hash_crear(5)) != NULL, "Crear un hash con tamaño 5 devuelve un hash");
-	pa2m_afirmar(hash_cantidad(h) == 0, "Hash tiene 0 elementos");
+	pa2m_afirmar(hash_cantidad(h) == 0, "Hash nulo tiene 0 elementos");
 
 	hash_destruir(h);
 
-	pa2m_afirmar((h = hash_crear(5)) != NULL, "Crear un hash con tamaño 100 devuelve un hash");
+	pa2m_afirmar((h = hash_crear(100)) != NULL, "Crear un hash con tamaño 100 devuelve un hash");
 	pa2m_afirmar(hash_cantidad(h) == 0, "Hash tiene 0 elementos");
 
 	hash_destruir(h);
@@ -55,11 +56,18 @@ void puedoCrearUnHash()
 void puedoInsertarHash()
 {
 	hash_t* h = NULL;
+
+	pa2m_afirmar(hash_insertar(h, "1002", "Premium 10-Input 2-Bus Mixer", NULL) == NULL, "Insertar en hash NULL devuelve NULL");
+	pa2m_afirmar(hash_obtener(h, "302USB") == NULL, "Obtener de hash nulo devuelve NULL");
+
 	h = hash_crear(5);
+
+	pa2m_afirmar(hash_insertar(h, NULL, "NULL", NULL) == NULL, "Insertar con clave NULL devuelve NULL");
+	pa2m_afirmar(hash_cantidad(h) == 0, "Hash tiene 0 elementos");
 
 	pa2m_afirmar(hash_insertar(h, "1002", "Premium 10-Input 2-Bus Mixer", NULL) != NULL, "Inserto clave 1002 exitosamente");
 	pa2m_afirmar(hash_cantidad(h) == 1, "Hash tiene 1 elemento");
-	pa2m_afirmar(strcmp(hash_obtener(h, "1002"), "Premium 10-Input 2-Bus Mixer") == 0, "Busco y encuentro clave 1002");
+	pa2m_afirmar(hash_contiene(h, "1002"), "Busco y encuentro clave 1002");
 
 	pa2m_afirmar(hash_insertar(h, "1204USB", "Premium 12-Input 2/2-Bus Mixer", NULL) != NULL, "Inserto clave 1204USB exitosamente");
 	pa2m_afirmar(hash_cantidad(h) == 2, "Hash tiene 2 elementos");
@@ -76,17 +84,23 @@ void puedoInsertarHash()
 	pa2m_afirmar(hash_insertar(h, "FLOW 8", "8-Input Digital Mixer", NULL) != NULL, "Inserto clave FLOW 8 exitosamente");
 	pa2m_afirmar(hash_cantidad(h) == 6, "Hash tiene 6 elementos");
 
-	pa2m_afirmar(strcmp(hash_obtener(h, "502"), "Premium 5-Input 2-Bus Mixer") == 0, "Busco y encuentro clave 502");
+	pa2m_afirmar(hash_insertar(h, "202", NULL, NULL) != NULL, "Inserto clave 202 con elemento NULL exitosamente");
 
-	pa2m_afirmar(strcmp(hash_obtener(h, "1204USB"), "Premium 12-Input 2/2-Bus Mixer") == 0, "Busco y encuentro clave 1204USB");
+	pa2m_afirmar(strcmp(hash_obtener(h, "502"), "Premium 5-Input 2-Bus Mixer") == 0, "Busco y obtengo clave 502");
 
-	pa2m_afirmar(strcmp(hash_obtener(h, "302USB"), "Premium 5-Input Mixer") == 0, "Busco y encuentro clave 302USB");
+	pa2m_afirmar(strcmp(hash_obtener(h, "1204USB"), "Premium 12-Input 2/2-Bus Mixer") == 0, "Busco y obtengo clave 1204USB");
 
-	pa2m_afirmar(strcmp(hash_obtener(h, "FLOW 8"), "8-Input Digital Mixer") == 0, "Busco y encuentro clave FLOW 8");
+	pa2m_afirmar(strcmp(hash_obtener(h, "302USB"), "Premium 5-Input Mixer") == 0, "Busco y obtengo clave 302USB");
 
-	pa2m_afirmar(strcmp(hash_obtener(h, "802"), "Premium 8-Input 2-Bus Mixer") == 0, "Busco y encuentro clave 802");
+	pa2m_afirmar(strcmp(hash_obtener(h, "FLOW 8"), "8-Input Digital Mixer") == 0, "Busco y obtengo clave FLOW 8");
 
-	pa2m_afirmar(!hash_obtener(h, "2000"), "Busco clave 2000 inexistente y encuentro NULL");
+	pa2m_afirmar(strcmp(hash_obtener(h, "802"), "Premium 8-Input 2-Bus Mixer") == 0, "Busco y obtengo clave 802");
+	pa2m_afirmar(hash_quitar(h, "802") != NULL, "Elimino clave 802");
+	pa2m_afirmar(!hash_obtener(h, "802"), "Busco clave 802 y obtengo NULL");
+
+	pa2m_afirmar(!hash_obtener(h, "2000"), "Busco clave 2000 inexistente y obtengo NULL");
+	pa2m_afirmar(!hash_obtener(h, NULL), "Busco clave NULL y obtengo NULL");
+	pa2m_afirmar(!hash_contiene(h, "2000"), "Busco clave 2000 inexistente y no está");
 
 	hash_destruir(h);
 }
@@ -143,29 +157,48 @@ void insercionesMUCHAS_HASH()
 	hash_t* h = NULL;
 	h = hash_crear(5);
 	bool insercion_correcta = true;
+	bool clave_esta = true;
 	char clave[10];
-	for (int i = 0; insercion_correcta && i < 10000; i++) {
-		sprintf(clave, "%d", i);
+	for (int i = 0; insercion_correcta && i < 20000; i++) {
+		sprintf(clave, "%i", i);
 
 		if (hash_insertar(h, clave, "Prueba", NULL) == NULL) {
 			insercion_correcta = false;
 		}
 	}
 
-	pa2m_afirmar(insercion_correcta, "inserto 10000 claves ok");
-	pa2m_afirmar(hash_cantidad(h) == 10000, "Hash tiene 10000 elementos");
+	pa2m_afirmar(insercion_correcta, "Inserto 20000 claves ok");
+	pa2m_afirmar(hash_cantidad(h) == 20000, "Hash tiene 20000 elementos");
 
+	for (int i = 0; clave_esta && i < 20000; i++) {
+		sprintf(clave, "%i", i);
+
+		if (!hash_contiene(h, clave)) {
+			clave_esta = false;
+		}
+	}
+	pa2m_afirmar(clave_esta, "Las 20000 claves estan en el hash");
 
 
 	insercion_correcta = true;
-	for (int i = 0; insercion_correcta && i < 10000; i++) {
+	for (int i = 0; insercion_correcta && i < 20000; i++) {
 		sprintf(clave, "%d", i);
-		;
 		if (hash_insertar(h, clave, "Prueba", NULL) == NULL) {
 			insercion_correcta = false;
 		}
 	}
-	pa2m_afirmar(insercion_correcta, "vuelvo a insertar mismas 10000 claves ok");
+	pa2m_afirmar(insercion_correcta, "Vuelvo a insertar mismas 20000 claves ok");
+
+	pa2m_afirmar(hash_cantidad(h) == 20000, "Hash tiene 20000 elementos");
+
+	for (int i = 0; clave_esta && i < 20000; i++) {
+		sprintf(clave, "%i", i);
+
+		if (!hash_contiene(h, clave)) {
+			clave_esta = false;
+		}
+	}
+	pa2m_afirmar(clave_esta, "Las 20000 claves estan en el hash");
 
 	hash_destruir(h);
 }
@@ -173,10 +206,11 @@ void insercionesMUCHAS_HASH()
 void puedoBorrarHAsh()
 {
 	hash_t* h = NULL;
+	pa2m_afirmar(hash_quitar(h, "1002") == NULL, "Intento quitar clave de hash NULL devuelve NULL");
+
 	h = hash_crear(5);
-
 	pa2m_afirmar(hash_quitar(h, "1002") == NULL, "Intento quitar clave de hash vacio devuelve NULL");
-
+	
 	char** consolas = malloc(4 * sizeof(char*));
 	if (!consolas) {
 		hash_destruir(h);
@@ -228,6 +262,8 @@ void puedoBorrarHAsh()
 
 	pa2m_afirmar(hash_cantidad(h) == 4, "Hash tiene 4 elementos");
 
+	pa2m_afirmar(hash_quitar(h, NULL) == NULL, "Intento quitar clave NULL de hash devuelve NULL");
+
 	pa2m_afirmar(hash_quitar(h, "1002") != NULL, "Intento quitar clave 1002 de hash exitosamente");
 	pa2m_afirmar(hash_quitar(h, "1002") == NULL, "Intento quitar clave 1002 nuevamente de hash devuelve NULL");
 	pa2m_afirmar(hash_quitar(h, "1002") == NULL, "Intento quitar clave 1002 nuevamente de hash devuelve NULL");
@@ -259,7 +295,9 @@ void puedoBorrarHAsh()
 void pruebasIteradorHash()
 {
 	hash_t* h = NULL;
+	pa2m_afirmar(hash_con_cada_clave(h, mostrar_consola, NULL) == 0, "No puedo iterar con hash nulo");
 	h = hash_crear(5);
+	pa2m_afirmar(hash_con_cada_clave(h, mostrar_consola, NULL) == 0, "No puedo iterar con hash vacio");
 
 	char** consolas = malloc(4 * sizeof(char*));
 	if (!consolas) {
@@ -314,27 +352,10 @@ void pruebasIteradorHash()
 
 	size_t cantidad_iterados = 0;
 	pa2m_afirmar(hash_con_cada_clave(h, iterar_hasta_2, &cantidad_iterados) == cantidad_iterados, "Se iteraron la cantidad correcta de consolas");
+	pa2m_afirmar(hash_con_cada_clave(h, NULL, &cantidad_iterados) == 0, "No puedo iterar con comparador NULL");
 
 	hash_destruir_todo(h, destruir_string);
 	free(consolas);
-}
-
-void pruebasNULLHash()
-{
-	hash_t* h = NULL;
-
-	pa2m_afirmar((h = hash_crear(5)) != NULL, "Crear un hash con destructor NULL devuelve un hash");
-	pa2m_afirmar(hash_insertar(h, NULL, "NULL", NULL) == NULL, "Insertar con clave NULL devuelve -1");
-	pa2m_afirmar(hash_cantidad(h) == 0, "Hash tiene 0 elementos");
-
-	pa2m_afirmar(hash_insertar(h, "802", "Premium 8-Input 2-Bus Mixer", NULL) != NULL, "Inserto clave 802 exitosamente");
-	pa2m_afirmar(hash_cantidad(h) == 1, "Hash tiene 1 elementos");
-
-	pa2m_afirmar(hash_quitar(h, NULL) == NULL, "Intento quitar clave NULL de hash devuelve -1");
-
-	pa2m_afirmar(hash_insertar(h, "202", NULL, NULL) != NULL, "Inserto clave 202 con elemento NULL exitosamente");
-
-	hash_destruir(h);
 }
 
 int main()
@@ -356,9 +377,6 @@ int main()
 
 	pa2m_nuevo_grupo("Pruebas de iterador interno");
 	pruebasIteradorHash();
-
-	pa2m_nuevo_grupo("Pruebas con NULL");
-	pruebasNULLHash();
 
 	return pa2m_mostrar_reporte();
 }
